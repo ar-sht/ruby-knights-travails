@@ -1,5 +1,4 @@
 require_relative 'knight'
-require 'pry-byebug'
 
 class Board
   attr_accessor :root
@@ -9,9 +8,11 @@ class Board
   end
 
 
-  def print_lineage(node)
-    print_lineage(node.parent) unless node.parent.nil?
+  def print_lineage(node, count = 0)
+    count = print_lineage(node.parent, count + 1) unless node.parent.nil?
+
     p node.position
+    count
   end
 
   def print_path(target)
@@ -21,6 +22,7 @@ class Board
       node.possible_moves.each { |move| queue.append(move) }
       node = queue.shift
     end
-    print_lineage(node)
+    length = print_lineage(node)
+    puts "Not bad, it took #{length} move#{length == 1 ? '' : 's'}"
   end
 end
