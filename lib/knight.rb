@@ -2,27 +2,26 @@
 require 'pry-byebug'
 
 class Knight
-  attr_accessor :position, :possible_moves
+  attr_reader :position, :parent
 
-  def initialize(square = [nil, nil], used = [])
-    @possible_moves = []
-    @move_diffs = [[1, 2], [-1, 2], [1, -2], [-1, -2], [2, 1], [-2, 1], [2, -1], [-2, -1]].sort_by { |x| x[0] }
-    @position = square
+  MOVE_DIFFS = [[1, 2], [-1, 2], [1, -2], [-1, -2], [2, 1], [-2, 1], [2, -1], [-2, -1]].freeze
+  @@used = []
 
-    @move_diffs.each do |diff|
-      new_position = []
-      @position.each_with_index { |coord, i| new_position << coord + diff[i] }
-      unless new_position.any? { |coord| coord.negative? || coord > 7 } || used.include?(new_position)
-        used.append(new_position)
-        @possible_moves << new_position
-      end
-    end
-    @possible_moves.map! { |move| Knight.new(move, used) }
+  def initialize(position, parent)
+    @position = position
+    @parent = parent
+    @@used.append(parent)
   end
 
-  def <=>(other)
-    @position <=> other.data
+  def possible_moves
+    MOVE_DIFFS
+      .map { |difference| [@position[0] + difference[0], @position[1] + difference[1]] }
+      .select { |move| Knight.valid?(move) }
+      .reject { |move| @@used.include?(move) }
+      .map { |move| Knight.new(move, self)}
+  end
+
+  def self.valid?(position)
+    position.all? { |coordinate| coordinate.between?(0, 7) }
   end
 end
-
-tester = Knight.new([3, 3])
